@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+    
+    <meta name="description" content="A secure, client-side domain extraction tool with multiple themes.">
+    <title>Domain Extractor Tool</title>
+    <style>
+        :root {
+            /* Default Theme (Green) */
+            --primary: #52BE80;
+            --primary-dark: #45a06b;
+            --bg-color: #4CAF50;
+            --light-bg: #E8F5E9;
+            --yellow-bg: #ffffff;
+            --border-color: #d3d3d3;
+            --separator-color: #d3d3d3;
+            --text-color: #333;
+            --btn-text-color: white;
+            --btn-border: none;
+            --header-bg: transparent; 
+            --header-text: white;
+            --container-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            --sidebar-bg: #f5f5f5;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #bbb; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 40px;
+            color: var(--header-text);
+            flex-shrink: 0;
+        }
+
+        .logo { font-size: 28px; font-weight: bold; }
+        .logo span { color: #222; opacity: 0.8; }
+        
+        .nav-links a { color: var(--header-text); text-decoration: none; margin-left: 20px; font-size: 14px; opacity: 0.9; }
+        .nav-links a:hover { opacity: 1; text-decoration: underline; }
+
+        /* Main Container Wrapper */
+        .main-container {
+            flex: 1;
+            background: white;
+            margin: 0 40px 40px 40px;
+            border-radius: 8px;
+            box-shadow: var(--container-shadow);
+            display: flex;
+            flex-direction: column; 
+            overflow: hidden;
+            border: 1px solid var(--border-color); 
+        }
+
+        /* Middle Section (Text Areas + Sidebar) */
+        .middle-section {
+            display: flex;
+            flex: 1;
+            min-height: 0; 
+        }
+
+        /* Work Area */
+        .work-area {
+            flex: 3;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border-color);
+            min-width: 0;
+        }
+
+        .text-columns {
+            display: flex;
+            flex: 1;
+            min-height: 0; 
+        }
+
+        .col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border-color);
+            position: relative; 
+            min-width: 0;
+        }
+        .col:last-child { border-right: none; }
+        .col:nth-child(2) { background-color: var(--yellow-bg); }
+
+        textarea {
+            width: 100%;
+            height: 100%;
+            flex: 1; 
+            border: none;
+            padding: 15px; 
+            resize: none;
+            outline: none;
+            font-size: 13px;
+            background: transparent;
+            color: var(--text-color);
+            line-height: 1.5;
+            white-space: pre;
+            overflow: auto;
+        }
+
+        /* Overlay Buttons */
+        .overlay-actions {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px;
+            display: flex;
+            gap: 4px;
+            opacity: 0; 
+            transition: opacity 0.2s;
+            pointer-events: none; 
+            z-index: 10;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .col:hover .overlay-actions { opacity: 1; pointer-events: auto; }
+
+        /* Footer Controls (Merged) */
+        .footer-controls {
+            height: 70px; 
+            display: flex;
+            align-items: center; 
+            flex-shrink: 0;
+            background: #fff;
+            border-top: 1px solid var(--border-color);
+            width: 100%;
+            padding: 0 15px; 
+            gap: 20px; 
+        }
+
+        .footer-btn-group {
+            display: flex;
+            align-items: center;
+        }
+
+        .footer-stats-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden; 
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 8px 16px;
+            border: var(--btn-border);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--btn-text-color);
+            margin-right: 5px;
+            font-weight: 500;
+            transition: background 0.2s, color 0.2s, border-color 0.2s;
+        }
+
+        .btn-green { background-color: var(--primary); }
+        .btn-green:hover { background-color: var(--primary-dark); }
+        .btn-dark { background-color: #444; }
+        .btn-dark:hover { background-color: #222; }
+        .btn-blue { background-color: #4da6ba; }
+        .btn-blue:hover { background-color: #3b8c9b; }
+
+        .icon-btn {
+            background: white;
+            border: 1px solid #ccc;
+            color: #333;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 5px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .icon-btn:hover { background-color: #f5f5f5; }
+
+        .btn-mini {
+            font-size: 11px;
+            padding: 4px 8px;
+            background: white;
+            border: 1px solid #ccc;
+            color: #555;
+            border-radius: 3px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        .btn-mini:hover { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* Stats */
+        .stats-title { font-weight: bold; color: #333; font-size: 14px; margin-bottom: 2px; }
+        .stats-detail { color: #666; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* Sidebar */
+        .sidebar {
+            flex: 1;
+            background-color: var(--sidebar-bg);
+            display: flex;
+            flex-direction: column;
+            min-width: 250px;
+            max-width: 350px; 
+            /*border-left: 1px solid var(--border-color);*/
+        }
+
+        .sidebar-header {
+            padding: 10px 15px; /* Compact height */
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between; 
+            align-items: center;
+            color: #333;
+            font-weight: bold;
+            font-size: 16px;
+            height: 50px;
+        }
+
+        .sidebar-icon { color: var(--primary); margin-right: 10px; font-size: 18px; }
+
+        /* Theme Switcher */
+        .theme-switcher { display: flex; gap: 8px; }
+        .theme-dot { width: 16px; height: 16px; border-radius: 50%; cursor: pointer; border: 1px solid rgba(0,0,0,0.1); transition: transform 0.2s; }
+        .theme-dot:hover { transform: scale(1.2); }
+        
+        .t-green { background: #52BE80; }
+        .t-red { background: #E74C3C; }
+        .t-outline { background: #fff; border: 2px solid #333; } 
+
+        .settings-content { padding: 15px; flex: 1; overflow-y: auto; }
+        .form-group { margin-bottom: 10px; }
+        
+        /* Darker separator color */
+        .has-separator { 
+            border-top: 1px solid var(--separator-color); 
+            padding-top: 15px; 
+            margin-top: 15px; 
+        }
+
+        /* Inputs */
+        select, input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #555;
+            background-color: white;
+        }
+        
+        select {
+            appearance: none; -webkit-appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg fill="%23555" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+            background-repeat: no-repeat;
+            background-position-x: 98%;
+            background-position-y: 50%;
+            padding-right: 25px;
+        }
+
+        .split-group { display: flex; gap: 10px; align-items: center; }
+        .check-group { display: flex; align-items: center; margin-bottom: 8px; font-size: 13px; color: #555; }
+        .group-tld-group { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #333; }
+        .check-row { display: flex; margin-bottom: 8px; }
+        .check-label { width: 60px; font-size: 13px; color: #666; }
+        .check-item { display: flex; align-items: center; margin-right: 15px; font-size: 13px; color: #555; cursor: pointer; }
+        .check-item input { margin-right: 5px; }
+        .helper-text { font-size: 12px; color: #888; margin-top: 5px; display: block; }
+        
+        .sidebar-inline-actions { 
+            display: flex; 
+            gap: 5px; 
+            margin-top: 20px; 
+            padding-top: 15px; 
+            border-top: 1px solid var(--separator-color); 
+        }
+
+        /* Responsive Design */
+        @media (max-width: 900px) {
+            body { height: auto; min-height: 100vh; }
+            .main-container {
+                margin: 0; width: 100%; border-radius: 0; box-shadow: none; height: auto; overflow: visible; border: none;
+            }
+            .middle-section { flex-direction: column; }
+            .work-area { flex: none; border-right: none; }
+            
+            .text-columns { flex-direction: column; height: auto; }
+            
+            .col {
+                min-height: 35vh; 
+                border-right: none;
+                border-bottom: 1px solid var(--border-color); 
+                display: flex; flex-direction: column;
+            }
+            .col:last-child { border-bottom: none; }
+            
+            .footer-controls {
+                height: auto;
+                flex-direction: column; 
+                border-top: 1px solid var(--border-color);
+                padding: 15px;
+                gap: 15px;
+                align-items: stretch;
+            }
+            
+            .footer-btn-group { justify-content: center; margin-bottom: 5px; }
+            .footer-stats-group { text-align: center; }
+            .stats-detail { white-space: normal; }
+
+            .sidebar { border-left: none; border-top: 1px solid var(--border-color); min-height: auto; max-width: 100%; }
+            header { padding: 15px 20px; flex-direction: column; gap: 10px; text-align: center; }
+            .nav-links { display: flex; flex-wrap: wrap; justify-content: center; margin-top: 5px; }
+            .nav-links a { margin: 0 10px; }
+            
+            .overlay-actions {
+                opacity: 1; top: auto; bottom: 10px; right: 10px; background: #fff; border: 1px solid #ccc;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">Domain<span>Extractor</span></div>
+        <div class="nav-links">
+            <a href="#" rel="noopener noreferrer">Our Network</a>
+            <a href="#" rel="noopener noreferrer">More Tools</a>
+            <a href="#" rel="noopener noreferrer">Feedback</a>
+            <a href="#" rel="noopener noreferrer">Github</a>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="middle-section">
+            <div class="work-area">
+                <div class="text-columns">
+                    <div class="col">
+                        <textarea id="inputText" placeholder="Paste your content here..."></textarea>
+                    </div>
+                    <div class="col">
+                        <textarea id="extractedText" readonly placeholder="Extracted domains will appear here..."></textarea>
+                        <div class="overlay-actions">
+                            <button class="btn-mini" onclick="copyToClipboard('extractedText')">Copy</button>
+                            <button class="btn-mini" onclick="exportToFile('extractedText', 'csv')">CSV</button>
+                            <button class="btn-mini" onclick="exportToFile('extractedText', 'txt')">TXT</button>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <textarea id="filteredText" readonly placeholder="Filtered domains will appear here..."></textarea>
+                        <div class="overlay-actions">
+                            <button class="btn-mini" onclick="copyToClipboard('filteredText')">Copy</button>
+                            <button class="btn-mini" onclick="exportToFile('filteredText', 'csv')">CSV</button>
+                            <button class="btn-mini" onclick="exportToFile('filteredText', 'txt')">TXT</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <div><span class="sidebar-icon">&#9881;</span> Settings</div>
+                    <div class="theme-switcher">
+                        <div class="theme-dot t-green" onclick="setTheme('green')" title="Green"></div>
+                        <div class="theme-dot t-red" onclick="setTheme('red')" title="Red"></div>
+                        <div class="theme-dot t-outline" onclick="setTheme('outline')" title="Outline (Neutral)"></div>
+                    </div>
+                </div>
+                <div class="settings-content">
+                    
+                    <div class="form-group">
+                        <div class="group-tld-group">
+                            <input type="checkbox" id="groupTld">
+                            <label for="groupTld" style="cursor:pointer;">Group TLD-wise</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <select id="filterType">
+                            <option value="contains">Word Filter (Contains)</option>
+                            <option value="starts">Starts With</option>
+                            <option value="ends">Ends With</option>
+                        </select>
+                        <input type="text" id="wordFilterInput" placeholder="words here..." style="margin-top: 5px;">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="split-group" style="margin-bottom: 5px;">
+                            <select id="tldSelect" onchange="addTldFromSelect()" style="width: 140px; flex-shrink: 0;">
+                                <option value="">Select TLDs</option>
+                            </select>
+                            <span style="font-size: 12px; color: #555;">or</span>
+                            <input type="text" id="tldInput" placeholder="type extensions...">
+                        </div>
+                        <span class="helper-text">* separated by comma like "net,org,com.au"</span>
+                    </div>
+
+                    <div class="form-group split-group has-separator">
+                        <div>
+                            <label style="display:block; margin-bottom:3px; font-size:11px;">Min length</label>
+                            <input type="number" id="minLength" placeholder="MIN" min="1" value="1">
+                        </div>
+                        <div>
+                            <label style="display:block; margin-bottom:3px; font-size:11px;">Max length</label>
+                            <input type="number" id="maxLength" placeholder="MAX" min="1" value="63">
+                        </div>
+                    </div>
+
+                    <div class="form-group has-separator">
+                        <div class="check-row">
+                            <div class="check-label">Include:</div>
+                            <label class="check-item"><input type="checkbox" id="incHyphen" checked> Hyphens</label>
+                            <label class="check-item"><input type="checkbox" id="incNumber" checked> Numbers</label>
+                        </div>
+                    </div>
+
+                    <div class="check-group" style="margin-bottom: 5px;">
+                        <input type="checkbox" id="enableReplace" style="margin-right: 8px;">
+                        <span style="font-size: 12px;">Replace result with extension:</span> <input type="text" id="replaceInput" placeholder=".net" style="width: 80px; margin-left: 20px;">
+                    </div>
+
+                    <div class="sidebar-inline-actions">
+                        <button class="btn btn-green" style="flex: 1;" onclick="applySettings()">Apply</button>
+                        <button class="btn btn-blue" style="flex: 1;" onclick="saveSettings()">Save</button>
+                        <button class="btn btn-dark" style="flex: 1;" onclick="resetSettings()">Reset</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-controls">
+            <div class="footer-btn-group">
+                <button class="icon-btn" onclick="clearPage()" title="Refresh Page">&#x21bb;</button>
+                <button class="btn btn-green" onclick="extractDomains()">Extract</button>
+                <button class="btn btn-dark" onclick="resetInput()">Reset</button>
+            </div>
+            
+            <div class="footer-stats-group">
+                <div id="statsTitle" class="stats-title">Total No Of Domains: 0</div>
+                <div id="statsDetail" class="stats-detail"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // -- Configuration --
+        // SECURITY: Strict allow-list for TLDs validation logic (client-side enforcement)
+        const invalidTlds = ['html', 'htm', 'php', 'asp', 'aspx', 'jsp', 'cfm', 'pl', 'py', 'rb', 'js', 'css', 'json', 'xml', 'txt', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp', 'mp3', 'mp4', 'avi', 'zip', 'rar', 'exe'];
+        const compositeSecond = ['co', 'com', 'net', 'org', 'gov', 'edu', 'ac', 'res', 'mil'];
+
+        let rawExtractedDomains = [];
+
+        window.onload = function() {
+            loadSettings();
+        };
+
+        // -- Themes --
+        function setTheme(theme) {
+            const root = document.documentElement;
+            // Reset common overrides
+            root.style.setProperty('--btn-text-color', 'white');
+            root.style.setProperty('--btn-border', 'none');
+            root.style.setProperty('--header-bg', 'transparent');
+            root.style.setProperty('--header-text', 'white');
+            root.style.setProperty('--container-shadow', '0 4px 15px rgba(0,0,0,0.2)');
+            root.style.setProperty('--sidebar-bg', '#f8f8f8');
+            root.style.setProperty('--border-color', '#ccc');
+            root.style.setProperty('--separator-color', '#d3d3d3');
+            
+            if (theme === 'green') {
+                root.style.setProperty('--primary', '#52BE80');
+                root.style.setProperty('--primary-dark', '#45a06b');
+                root.style.setProperty('--bg-color', '#4CAF50');
+            } else if (theme === 'red') {
+                root.style.setProperty('--primary', '#E74C3C');
+                root.style.setProperty('--primary-dark', '#C0392B');
+                root.style.setProperty('--bg-color', '#E74C3C');
+            } else if (theme === 'outline') {
+                root.style.setProperty('--primary', '#000'); 
+                root.style.setProperty('--primary-dark', '#333');
+                root.style.setProperty('--bg-color', '#f8f9fa'); 
+                root.style.setProperty('--header-text', '#333');
+                root.style.setProperty('--btn-text-color', '#333');
+                root.style.setProperty('--btn-border', '1px solid #333');
+                root.style.setProperty('--container-shadow', 'none');
+                root.style.setProperty('--sidebar-bg', '#ffffff'); 
+                root.style.setProperty('--border-color', '#ddd'); 
+                
+                document.body.classList.add('theme-outline');
+                return; 
+            }
+            
+            document.body.classList.remove('theme-outline');
+        }
+    </script>
+    
+    <style>
+        body.theme-outline .btn-green,
+        body.theme-outline .btn-dark,
+        body.theme-outline .btn-blue {
+            background-color: white;
+            color: #333;
+            border: 1px solid #ccc;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        body.theme-outline .btn-green:hover,
+        body.theme-outline .btn-dark:hover,
+        body.theme-outline .btn-blue:hover {
+            background-color: #f0f0f0;
+            border-color: #999;
+        }
+        body.theme-outline .main-container {
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        body.theme-outline .col:nth-child(2) {
+             background-color: #ffffff; 
+        }
+        body.theme-outline .logo span { color: #333; opacity: 1; }
+        body.theme-outline header { border-bottom: 1px solid #eee; background: white; padding: 10px 40px; margin-bottom: 20px; }
+    </style>
+
+    <script>
+        // -- Core Functions --
+        function clearPage() {
+            document.getElementById('inputText').value = '';
+            document.getElementById('extractedText').value = '';
+            document.getElementById('filteredText').value = '';
+            rawExtractedDomains = [];
+            updateStats([]);
+            document.getElementById('tldSelect').innerHTML = '<option value="">Select TLDs</option>';
+        }
+
+        function resetInput() {
+            document.getElementById('inputText').value = '';
+        }
+
+        function splitDomain(domain) {
+            const parts = domain.split('.');
+            if (parts.length <= 2) {
+                return { name: parts[0], ext: parts.slice(1).join('.') };
+            }
+            const last = parts[parts.length - 1];
+            const secondLast = parts[parts.length - 2];
+
+            if (last.length === 2 && compositeSecond.includes(secondLast)) {
+                return { 
+                    name: parts.slice(0, -2).join('.'), 
+                    ext: parts.slice(-2).join('.') 
+                };
+            }
+            return { 
+                name: parts.slice(0, -1).join('.'), 
+                ext: parts[parts.length - 1] 
+            };
+        }
+
+        function extractDomains() {
+            const inputText = document.getElementById('inputText').value;
+            if (!inputText.trim()) {
+                alert('Please paste some content first.');
+                return;
+            }
+            // SECURITY: Basic Regex prevents script injection/formula injection via export
+            const regex = /\b(?:https?:\/\/)?(?:www\.)?([a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,})\b/gi;
+            const domains = new Set();
+            let match;
+            while ((match = regex.exec(inputText)) !== null) {
+                if (match[1]) {
+                    let fullDomain = match[1].toLowerCase().trim();
+                    const tld = fullDomain.split('.').pop();
+                    if (!invalidTlds.includes(tld) && /^[a-z]{2,6}$/.test(tld)) {
+                        let rootDomain = fullDomain;
+                        const parts = fullDomain.split('.');
+                        if (parts.length > 2) {
+                             const last = parts[parts.length - 1]; 
+                             const secondLast = parts[parts.length - 2];
+                             if (last.length === 2 && compositeSecond.includes(secondLast)) {
+                                rootDomain = parts.slice(-3).join('.');
+                             } else {
+                                rootDomain = parts.slice(-2).join('.');
+                             }
+                        }
+                        domains.add(rootDomain);
+                    }
+                }
+            }
+            rawExtractedDomains = Array.from(domains).sort();
+            document.getElementById('extractedText').value = rawExtractedDomains.join('\n');
+            updateStats(rawExtractedDomains);
+            populateTldSelect(rawExtractedDomains);
+            applySettings();
+        }
+
+        function updateStats(domains) {
+            // SECURITY: Using innerText prevents XSS
+            document.getElementById('statsTitle').innerText = `Total No Of Domains: ${domains.length}`;
+            const tldCounts = {};
+            domains.forEach(d => {
+                const tld = d.split('.').pop();
+                tldCounts[tld] = (tldCounts[tld] || 0) + 1;
+            });
+            let statString = Object.entries(tldCounts)
+                .sort((a,b) => b[1] - a[1])
+                .map(([key, val]) => `${key}=${val}`)
+                .join(' ');
+            document.getElementById('statsDetail').innerText = statString;
+        }
+
+        function populateTldSelect(domains) {
+            const uniqueTlds = [...new Set(domains.map(d => d.split('.').pop()))].sort();
+            const select = document.getElementById('tldSelect');
+            select.innerHTML = '<option value="">Select TLDs</option>';
+            uniqueTlds.forEach(tld => {
+                const option = document.createElement('option');
+                option.value = tld;
+                option.text = '.' + tld;
+                select.add(option);
+            });
+        }
+
+        // -- Settings --
+        function addTldFromSelect() {
+            const select = document.getElementById('tldSelect');
+            const input = document.getElementById('tldInput');
+            const val = select.value;
+            if(val) {
+                let current = input.value.trim();
+                if(current.length > 0 && !current.endsWith(',')) current += ',';
+                input.value = current + val;
+                select.value = ""; 
+            }
+        }
+
+        function applySettings() {
+            if(rawExtractedDomains.length === 0 && document.getElementById('inputText').value.trim() !== "") {
+                extractDomains(); 
+                if(rawExtractedDomains.length === 0) return;
+            }
+
+            let filtered = [...rawExtractedDomains];
+
+            const filterType = document.getElementById('filterType').value;
+            const filterWord = document.getElementById('wordFilterInput').value.toLowerCase().trim();
+            if(filterWord) {
+                filtered = filtered.filter(d => {
+                    if(filterType === 'contains') return d.includes(filterWord);
+                    if(filterType === 'starts') return d.startsWith(filterWord);
+                    if(filterType === 'ends') return d.endsWith(filterWord);
+                    return true;
+                });
+            }
+
+            const tldInput = document.getElementById('tldInput').value.trim();
+            if(tldInput) {
+                const allowedTlds = tldInput.split(/[\s,]+/).map(s => s.trim().replace(/^\./, '').toLowerCase()).filter(x => x);
+                if(allowedTlds.length > 0) {
+                    filtered = filtered.filter(d => {
+                        return allowedTlds.some(tld => d.endsWith('.' + tld));
+                    });
+                }
+            }
+
+            const minLen = parseInt(document.getElementById('minLength').value) || 1;
+            const maxLen = parseInt(document.getElementById('maxLength').value) || 63;
+            filtered = filtered.filter(d => {
+                const parts = splitDomain(d);
+                const len = parts.name.length;
+                return len >= minLen && len <= maxLen;
+            });
+
+            const allowHyphens = document.getElementById('incHyphen').checked;
+            const allowNumbers = document.getElementById('incNumber').checked;
+            if(!allowHyphens) filtered = filtered.filter(d => !d.includes('-'));
+            if(!allowNumbers) filtered = filtered.filter(d => !/\d/.test(d));
+
+            const enableReplace = document.getElementById('enableReplace').checked;
+            const replaceVal = document.getElementById('replaceInput').value.trim();
+            if(enableReplace && replaceVal) {
+                const newExt = replaceVal.startsWith('.') ? replaceVal : '.' + replaceVal;
+                filtered = filtered.map(d => {
+                    const parts = splitDomain(d); 
+                    return parts.name + newExt;
+                });
+            }
+
+            updateStats(filtered);
+
+            const groupTld = document.getElementById('groupTld').checked;
+            let outputText = "";
+            if(groupTld) {
+                const tldMap = new Map();
+                filtered.forEach(domain => {
+                    const tld = domain.split('.').pop();
+                    if(!tldMap.has(tld)) tldMap.set(tld, []);
+                    tldMap.get(tld).push(domain);
+                });
+                const sortedTlds = Array.from(tldMap.keys()).sort();
+                sortedTlds.forEach(tld => {
+                    outputText += `${tld.toUpperCase()}\n`;
+                    tldMap.get(tld).sort().forEach(d => outputText += `${d}\n`);
+                    outputText += '\n'; 
+                });
+                outputText = outputText.trim();
+            } else {
+                filtered.sort();
+                outputText = filtered.join('\n');
+            }
+            document.getElementById('filteredText').value = outputText;
+        }
+
+        function copyToClipboard(id) {
+            const el = document.getElementById(id);
+            if(!el.value) return;
+            el.select();
+            el.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(el.value).then(() => alert('Copied to clipboard'));
+        }
+
+        function exportToFile(id, type) {
+            const content = document.getElementById(id).value;
+            if(!content) { alert("Nothing to export"); return; }
+            let blob;
+            if(type === 'csv') {
+                const lines = content.split('\n').map(l => `"${l}"`).join('\n');
+                blob = new Blob([lines], { type: 'text/csv' });
+            } else {
+                blob = new Blob([content], { type: 'text/plain' });
+            }
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `domains.${type}`;
+            a.click();
+        }
+
+        // -- Persistence --
+        function saveSettings(showNotification = true) {
+            const settings = {
+                groupTld: document.getElementById('groupTld').checked,
+                filterType: document.getElementById('filterType').value,
+                wordFilter: document.getElementById('wordFilterInput').value,
+                tldInput: document.getElementById('tldInput').value,
+                minLength: document.getElementById('minLength').value,
+                maxLength: document.getElementById('maxLength').value,
+                incHyphen: document.getElementById('incHyphen').checked,
+                incNumber: document.getElementById('incNumber').checked,
+                enableReplace: document.getElementById('enableReplace').checked,
+                replaceInput: document.getElementById('replaceInput').value
+            };
+            localStorage.setItem('domainExtractorSettings', JSON.stringify(settings));
+            if(showNotification) alert("Settings Saved!");
+        }
+
+        function loadSettings() {
+            const saved = localStorage.getItem('domainExtractorSettings');
+            if(saved) {
+                const s = JSON.parse(saved);
+                if(s.groupTld !== undefined) document.getElementById('groupTld').checked = s.groupTld;
+                if(s.filterType) document.getElementById('filterType').value = s.filterType;
+                if(s.wordFilter) document.getElementById('wordFilterInput').value = s.wordFilter;
+                if(s.tldInput) document.getElementById('tldInput').value = s.tldInput;
+                if(s.minLength) document.getElementById('minLength').value = s.minLength;
+                if(s.maxLength) document.getElementById('maxLength').value = s.maxLength;
+                if(s.incHyphen !== undefined) document.getElementById('incHyphen').checked = s.incHyphen;
+                if(s.incNumber !== undefined) document.getElementById('incNumber').checked = s.incNumber;
+                if(s.enableReplace !== undefined) document.getElementById('enableReplace').checked = s.enableReplace;
+                if(s.replaceInput) document.getElementById('replaceInput').value = s.replaceInput;
+            }
+        }
+
+        function resetSettings() {
+            document.getElementById('groupTld').checked = false;
+            document.getElementById('wordFilterInput').value = '';
+            document.getElementById('tldInput').value = '';
+            document.getElementById('minLength').value = '1';
+            document.getElementById('maxLength').value = '63';
+            document.getElementById('incHyphen').checked = true;
+            document.getElementById('incNumber').checked = true;
+            document.getElementById('enableReplace').checked = false;
+            document.getElementById('replaceInput').value = '';
+            saveSettings(false); 
+            applySettings();
+        }
+    </script>
+</body>
+</html>
