@@ -1,4 +1,4 @@
-# 🔍 Domain Extractor
+# Domain Extractor
 
 A robust, privacy-focused, client-side tool for extracting domain names from unstructured text. Built with a focus on security, performance, and usability.
 
@@ -6,7 +6,7 @@ A robust, privacy-focused, client-side tool for extracting domain names from uns
 ![Platform](https://img.shields.io/badge/platform-browser-green.svg)
 ![Dependencies](https://img.shields.io/badge/dependencies-none-lightgrey.svg)
 
-## ✨ Features
+## Features
 
 * **Bulk Extraction:** Paste massive blocks of messy text; the tool uses advanced Regex to identify valid domains while ignoring common file extensions (e.g., .jpg, .png, .exe).
 * **Smart Filtering:**
@@ -22,13 +22,13 @@ A robust, privacy-focused, client-side tool for extracting domain names from uns
 * **Theming:** Includes a toggle for Light (Outline) and Dark modes.
 * **Persistence:** Automatically saves your filter settings preferences to LocalStorage.
 
-## 🔒 Security & Privacy
+## Security & Privacy
 
 * **Client-Side Only:** This tool runs entirely in your browser using Vanilla JavaScript. **No data is ever sent to a server.**
 * **Content Security Policy (CSP):** Includes strict CSP headers to prevent XSS and script injection attacks.
 * **Sanitized Inputs:** Protects against CSV injection and reverse tabnabbing on external links.
 
-## 🚀 How to Use
+## How to Use
 
 1.  **Download:** Clone this repository or download the `index.html` file.
 2.  **Run:** Simply double-click `index.html` to open it in any modern web browser. No installation or local server required.
@@ -40,12 +40,12 @@ A robust, privacy-focused, client-side tool for extracting domain names from uns
 4.  Click **Apply** to see refined results in the third box.
 5.  Click **CSV** to download your list.
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 * **HTML5**
 * **CSS3** (CSS Variables for theming, Flexbox/Grid for layout)
 * **JavaScript** (ES6+)
 
-## 📄 License
+## License
 
 This project is open source and available under the [MIT License](LICENSE).
