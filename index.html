@@ -10,7 +10,7 @@
     <title>Domain Extractor Tool</title>
     <style>
         :root {
-            /* Default Theme (Green) */
+            /* --- DEFAULT VARIABLES (Green Theme Base) --- */
             --primary: #52BE80;
             --primary-dark: #45a06b;
             --bg-color: #4CAF50;
@@ -25,6 +25,37 @@
             --header-text: white;
             --container-shadow: 0 4px 15px rgba(0,0,0,0.2);
             --sidebar-bg: #f5f5f5;
+            --glass-blur: 0px;
+            --glow-color: transparent;
+        }
+
+        /* --- GLASSMORPHISM THEME OVERRIDES --- */
+        body.glass-mode {
+            /* Deep radial gradient background */
+            --bg-color: radial-gradient(circle at 10% 20%, rgb(0, 20, 40) 0%, rgb(0, 5, 10) 90%);
+            
+            /* Glassy Transparency */
+            --sidebar-bg: rgba(0, 0, 0, 0.2);
+            --yellow-bg: rgba(255, 255, 255, 0.05); 
+            
+            /* Text Colors */
+            --text-color: #e0f7fa; 
+            --header-text: #e0f7fa;
+            
+            /* Borders & Separators */
+            --border-color: rgba(64, 224, 208, 0.2); 
+            --separator-color: rgba(64, 224, 208, 0.2);
+            
+            /* Buttons */
+            --primary: rgba(64, 224, 208, 0.1); /* Btn Background */
+            --primary-dark: rgba(64, 224, 208, 0.25); /* Btn Hover */
+            --btn-text-color: #e0f7fa;
+            --btn-border: 1px solid rgba(64, 224, 208, 0.4);
+            
+            /* Effects */
+            --container-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            --glass-blur: 16px; 
+            --glow-color: rgba(64, 224, 208, 0.5);
         }
 
         * {
@@ -35,18 +66,23 @@
         }
 
         body {
-            background-color: var(--bg-color);
+            background: var(--bg-color);
+            background-attachment: fixed; /* For glass gradient */
             height: 100vh;
             display: flex;
             flex-direction: column;
-            transition: background-color 0.3s ease, color 0.3s ease;
+            transition: background 0.3s ease, color 0.3s ease;
         }
 
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #bbb; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+        
+        /* Glass Scrollbar */
+        body.glass-mode ::-webkit-scrollbar-thumb { background: rgba(64, 224, 208, 0.3); border: 1px solid rgba(64, 224, 208, 0.2); }
+        body.glass-mode ::-webkit-scrollbar-thumb:hover { background: rgba(64, 224, 208, 0.6); }
 
         /* Header */
         header {
@@ -58,16 +94,19 @@
             flex-shrink: 0;
         }
 
-        .logo { font-size: 28px; font-weight: bold; }
-        .logo span { color: #222; opacity: 0.8; }
+        .logo { font-size: 28px; font-weight: bold; transition: text-shadow 0.3s; }
+        .logo span { opacity: 0.8; }
+        body.glass-mode .logo { text-shadow: 0 0 10px var(--glow-color); }
+        body.glass-mode .logo span { color: #e0f7fa; }
         
-        .nav-links a { color: var(--header-text); text-decoration: none; margin-left: 20px; font-size: 14px; opacity: 0.9; }
+        .nav-links a { color: var(--header-text); text-decoration: none; margin-left: 20px; font-size: 14px; opacity: 0.9; transition: all 0.3s; }
         .nav-links a:hover { opacity: 1; text-decoration: underline; }
+        body.glass-mode .nav-links a:hover { text-shadow: 0 0 8px var(--glow-color); }
 
         /* Main Container Wrapper */
         .main-container {
             flex: 1;
-            background: white;
+            background: white; /* Default opaque */
             margin: 0 40px 40px 40px;
             border-radius: 8px;
             box-shadow: var(--container-shadow);
@@ -75,6 +114,17 @@
             flex-direction: column; 
             overflow: hidden;
             border: 1px solid var(--border-color); 
+            
+            /* Glass Transitions */
+            transition: background 0.3s, box-shadow 0.3s, border-color 0.3s;
+        }
+        
+        /* Glass Container Override */
+        body.glass-mode .main-container {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border-radius: 16px;
         }
 
         /* Middle Section (Text Areas + Sidebar) */
@@ -106,6 +156,7 @@
             border-right: 1px solid var(--border-color);
             position: relative; 
             min-width: 0;
+            background-color: var(--bg-container); /* Inherits transparency */
         }
         .col:last-child { border-right: none; }
         .col:nth-child(2) { background-color: var(--yellow-bg); }
@@ -125,6 +176,9 @@
             white-space: pre;
             overflow: auto;
         }
+        
+        body.glass-mode textarea { font-family: 'Consolas', 'Monaco', monospace; }
+        body.glass-mode textarea::placeholder { color: rgba(224, 247, 250, 0.4); }
 
         /* Overlay Buttons */
         .overlay-actions {
@@ -144,8 +198,13 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         .col:hover .overlay-actions { opacity: 1; pointer-events: auto; }
+        
+        body.glass-mode .overlay-actions {
+            background: rgba(0, 20, 40, 0.6);
+            border-color: rgba(64, 224, 208, 0.3);
+        }
 
-        /* Footer Controls (Merged) */
+        /* Footer Controls */
         .footer-controls {
             height: 70px; 
             display: flex;
@@ -157,19 +216,11 @@
             padding: 0 15px; 
             gap: 20px; 
         }
+        
+        body.glass-mode .footer-controls { background: rgba(0, 0, 0, 0.2); }
 
-        .footer-btn-group {
-            display: flex;
-            align-items: center;
-        }
-
-        .footer-stats-group {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            overflow: hidden; 
-        }
+        .footer-btn-group { display: flex; align-items: center; }
+        .footer-stats-group { flex: 1; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
 
         /* Buttons */
         .btn {
@@ -186,10 +237,49 @@
 
         .btn-green { background-color: var(--primary); }
         .btn-green:hover { background-color: var(--primary-dark); }
-        .btn-dark { background-color: #444; }
-        .btn-dark:hover { background-color: #222; }
-        .btn-blue { background-color: #4da6ba; }
+        
+        /* The Blue Save Button (Default Style) */
+        .btn-blue { background-color: #4da6ba; color: white; }
         .btn-blue:hover { background-color: #3b8c9b; }
+
+        /* Standard Dark Button */
+        .btn-dark { background-color: #444; color: white; }
+        .btn-dark:hover { background-color: #222; }
+        
+        /* --- GLASS MODE BUTTON OVERRIDES --- */
+        /* Forces all buttons to look glassy in glass mode, ignoring their base color */
+        body.glass-mode .btn-green,
+        body.glass-mode .btn-blue,
+        body.glass-mode .btn-dark {
+            background-color: rgba(64, 224, 208, 0.1);
+            border: 1px solid rgba(64, 224, 208, 0.4);
+            color: #e0f7fa;
+            box-shadow: none;
+        }
+        
+        body.glass-mode .btn-green:hover,
+        body.glass-mode .btn-blue:hover,
+        body.glass-mode .btn-dark:hover {
+            background-color: rgba(64, 224, 208, 0.25);
+            box-shadow: 0 0 10px var(--glow-color);
+            border-color: rgba(64, 224, 208, 0.8);
+        }
+
+        /* --- OUTLINE THEME OVERRIDES --- */
+        body.theme-outline .btn-green,
+        body.theme-outline .btn-dark,
+        body.theme-outline .btn-blue {
+            background-color: white;
+            color: #333;
+            border: 1px solid #ccc;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        body.theme-outline .btn-green:hover,
+        body.theme-outline .btn-dark:hover,
+        body.theme-outline .btn-blue:hover {
+            background-color: #f0f0f0;
+            border-color: #999;
+        }
 
         .icon-btn {
             background: white;
@@ -206,6 +296,13 @@
             font-weight: bold;
         }
         .icon-btn:hover { background-color: #f5f5f5; }
+        
+        body.glass-mode .icon-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(64, 224, 208, 0.4);
+            color: #e0f7fa;
+        }
+        body.glass-mode .icon-btn:hover { background: rgba(64, 224, 208, 0.2); box-shadow: 0 0 8px var(--glow-color); }
 
         .btn-mini {
             font-size: 11px;
@@ -219,10 +316,20 @@
             font-weight: 600;
         }
         .btn-mini:hover { background: var(--primary); color: white; border-color: var(--primary); }
+        
+        body.glass-mode .btn-mini {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(64, 224, 208, 0.4);
+            color: #e0f7fa;
+        }
+        body.glass-mode .btn-mini:hover {
+            background: rgba(64, 224, 208, 0.2);
+        }
 
         /* Stats */
-        .stats-title { font-weight: bold; color: #333; font-size: 14px; margin-bottom: 2px; }
+        .stats-title { font-weight: bold; color: var(--text-color); font-size: 14px; margin-bottom: 2px; }
         .stats-detail { color: #666; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        body.glass-mode .stats-detail { color: #80deea; }
 
         /* Sidebar */
         .sidebar {
@@ -236,20 +343,21 @@
         }
 
         .sidebar-header {
-            padding: 10px 15px; /* Compact height */
+            padding: 10px 15px; 
             border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between; 
             align-items: center;
-            color: #333;
+            color: var(--text-color);
             font-weight: bold;
             font-size: 16px;
             height: 50px;
         }
 
         .sidebar-icon { color: var(--primary); margin-right: 10px; font-size: 18px; }
+        body.glass-mode .sidebar-icon { color: #40E0D0; }
 
-        /* Theme Switcher */
+        /* Theme Switcher Dots */
         .theme-switcher { display: flex; gap: 8px; }
         .theme-dot { width: 16px; height: 16px; border-radius: 50%; cursor: pointer; border: 1px solid rgba(0,0,0,0.1); transition: transform 0.2s; }
         .theme-dot:hover { transform: scale(1.2); }
@@ -257,11 +365,13 @@
         .t-green { background: #52BE80; }
         .t-red { background: #E74C3C; }
         .t-outline { background: #fff; border: 2px solid #333; } 
+        /* Glass Dot */
+        .t-glass { background: linear-gradient(135deg, #002b36, #40E0D0); border: 1px solid #40E0D0; }
 
         .settings-content { padding: 15px; flex: 1; overflow-y: auto; }
         .form-group { margin-bottom: 10px; }
         
-        /* Darker separator color */
+        /* Separator */
         .has-separator { 
             border-top: 1px solid var(--separator-color); 
             padding-top: 15px; 
@@ -272,11 +382,23 @@
         select, input[type="text"], input[type="number"] {
             width: 100%;
             padding: 8px 10px;
-            border: 1px solid #ccc;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             font-size: 13px;
-            color: #555;
-            background-color: white;
+            color: var(--text-color);
+            background-color: white; /* Default input bg */
+        }
+        
+        /* Glass Input Focus Glow */
+        body.glass-mode input, body.glass-mode select {
+            background-color: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(64, 224, 208, 0.3);
+            color: #e0f7fa;
+        }
+        body.glass-mode input:focus, body.glass-mode select:focus {
+            outline: none;
+            border-color: #40E0D0;
+            box-shadow: 0 0 8px rgba(64, 224, 208, 0.4);
         }
         
         select {
@@ -287,15 +409,21 @@
             background-position-y: 50%;
             padding-right: 25px;
         }
+        
+        body.glass-mode select {
+             background-image: url('data:image/svg+xml;utf8,<svg fill="%2340E0D0" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+        }
 
         .split-group { display: flex; gap: 10px; align-items: center; }
-        .check-group { display: flex; align-items: center; margin-bottom: 8px; font-size: 13px; color: #555; }
-        .group-tld-group { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #333; }
+        .check-group { display: flex; align-items: center; margin-bottom: 8px; font-size: 13px; color: var(--text-color); }
+        .group-tld-group { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-color); }
         .check-row { display: flex; margin-bottom: 8px; }
         .check-label { width: 60px; font-size: 13px; color: #666; }
-        .check-item { display: flex; align-items: center; margin-right: 15px; font-size: 13px; color: #555; cursor: pointer; }
+        body.glass-mode .check-label { color: #80deea; }
+        .check-item { display: flex; align-items: center; margin-right: 15px; font-size: 13px; color: var(--text-color); cursor: pointer; }
         .check-item input { margin-right: 5px; }
-        .helper-text { font-size: 12px; color: #888; margin-top: 5px; display: block; }
+        .helper-text { font-size: 11px; color: #888; margin-top: 5px; display: block; }
+        body.glass-mode .helper-text { color: rgba(224, 247, 250, 0.5); }
         
         .sidebar-inline-actions { 
             display: flex; 
@@ -304,6 +432,17 @@
             padding-top: 15px; 
             border-top: 1px solid var(--separator-color); 
         }
+
+        /* Outline Theme Specifics */
+        body.theme-outline .main-container {
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        body.theme-outline .col:nth-child(2) {
+             background-color: #ffffff; 
+        }
+        body.theme-outline .logo span { color: #333; opacity: 1; }
+        body.theme-outline header { border-bottom: 1px solid #eee; background: white; padding: 10px 40px; margin-bottom: 20px; }
 
         /* Responsive Design */
         @media (max-width: 900px) {
@@ -345,6 +484,9 @@
             .overlay-actions {
                 opacity: 1; top: auto; bottom: 10px; right: 10px; background: #fff; border: 1px solid #ccc;
             }
+            body.glass-mode .overlay-actions {
+                background: rgba(0,0,0,0.5); border-color: #40E0D0;
+            }
         }
     </style>
 </head>
@@ -356,7 +498,7 @@
             <a href="#" rel="noopener noreferrer">Our Network</a>
             <a href="#" rel="noopener noreferrer">More Tools</a>
             <a href="#" rel="noopener noreferrer">Feedback</a>
-            <a href="#" rel="noopener noreferrer">Github</a>
+            <a href="https://github.com/deebong/domain-extractor" rel="noopener noreferrer">Github</a>
         </div>
     </header>
 
@@ -392,6 +534,7 @@
                     <div class="theme-switcher">
                         <div class="theme-dot t-green" onclick="setTheme('green')" title="Green"></div>
                         <div class="theme-dot t-red" onclick="setTheme('red')" title="Red"></div>
+                        <div class="theme-dot t-glass" onclick="setTheme('glass')" title="Glass (Futuristic)"></div>                
                         <div class="theme-dot t-outline" onclick="setTheme('outline')" title="Outline (Neutral)"></div>
                     </div>
                 </div>
@@ -418,7 +561,7 @@
                             <select id="tldSelect" onchange="addTldFromSelect()" style="width: 140px; flex-shrink: 0;">
                                 <option value="">Select TLDs</option>
                             </select>
-                            <span style="font-size: 12px; color: #555;">or</span>
+                            <span style="font-size: 12px; color: var(--text-color);">or</span>
                             <input type="text" id="tldInput" placeholder="type extensions...">
                         </div>
                         <span class="helper-text">* separated by comma like "net,org,com.au"</span>
@@ -473,7 +616,6 @@
 
     <script>
         // -- Configuration --
-        // SECURITY: Strict allow-list for TLDs validation logic (client-side enforcement)
         const invalidTlds = ['html', 'htm', 'php', 'asp', 'aspx', 'jsp', 'cfm', 'pl', 'py', 'rb', 'js', 'css', 'json', 'xml', 'txt', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp', 'mp3', 'mp4', 'avi', 'zip', 'rar', 'exe'];
         const compositeSecond = ['co', 'com', 'net', 'org', 'gov', 'edu', 'ac', 'res', 'mil'];
 
@@ -481,6 +623,9 @@
 
         window.onload = function() {
             loadSettings();
+            // Load saved theme if any
+            const savedTheme = localStorage.getItem('domainExtractorTheme');
+            if(savedTheme) setTheme(savedTheme);
         };
 
         // -- Themes --
@@ -493,9 +638,14 @@
             root.style.setProperty('--header-text', 'white');
             root.style.setProperty('--container-shadow', '0 4px 15px rgba(0,0,0,0.2)');
             root.style.setProperty('--sidebar-bg', '#f5f5f5');
-            root.style.setProperty('--border-color', '#ccc');
+            root.style.setProperty('--border-color', '#d3d3d3');
             root.style.setProperty('--separator-color', '#d3d3d3');
+            root.style.setProperty('--yellow-bg', '#ffffff');
+            root.style.setProperty('--text-color', '#333');
             
+            // Clear body classes
+            document.body.classList.remove('theme-outline', 'glass-mode');
+
             if (theme === 'green') {
                 root.style.setProperty('--primary', '#52BE80');
                 root.style.setProperty('--primary-dark', '#45a06b');
@@ -516,40 +666,13 @@
                 root.style.setProperty('--border-color', '#ddd'); 
                 
                 document.body.classList.add('theme-outline');
-                return; 
+            } else if (theme === 'glass') {
+                document.body.classList.add('glass-mode');
             }
             
-            document.body.classList.remove('theme-outline');
+            localStorage.setItem('domainExtractorTheme', theme);
         }
-    </script>
-    
-    <style>
-        body.theme-outline .btn-green,
-        body.theme-outline .btn-dark,
-        body.theme-outline .btn-blue {
-            background-color: white;
-            color: #333;
-            border: 1px solid #ccc;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        }
-        body.theme-outline .btn-green:hover,
-        body.theme-outline .btn-dark:hover,
-        body.theme-outline .btn-blue:hover {
-            background-color: #f0f0f0;
-            border-color: #999;
-        }
-        body.theme-outline .main-container {
-            border: 1px solid #ddd;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        body.theme-outline .col:nth-child(2) {
-             background-color: #ffffff; 
-        }
-        body.theme-outline .logo span { color: #333; opacity: 1; }
-        body.theme-outline header { border-bottom: 1px solid #eee; background: white; padding: 10px 40px; margin-bottom: 20px; }
-    </style>
 
-    <script>
         // -- Core Functions --
         function clearPage() {
             document.getElementById('inputText').value = '';
@@ -564,15 +687,14 @@
             document.getElementById('inputText').value = '';
         }
 
-        // Helper to separate Name from TLD while preserving case
         function splitDomain(domain) {
-            const domainLower = domain.toLowerCase();
             const parts = domain.split('.');
-            const partsLower = domainLower.split('.');
-
             if (parts.length <= 2) {
                 return { name: parts[0], ext: parts.slice(1).join('.') };
             }
+            
+            const domainLower = domain.toLowerCase();
+            const partsLower = domainLower.split('.');
             
             const last = partsLower[partsLower.length - 1];
             const secondLast = partsLower[partsLower.length - 2];
@@ -615,26 +737,19 @@
             // Standard Regex
             const regex = /\b(?:https?:\/\/)?(?:www\.)?([a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,})\b/g;
             
-            const uniqueMap = new Map(); // Key = Lowercase, Value = Original
+            const uniqueMap = new Map(); 
             let match;
             
             while ((match = regex.exec(inputText)) !== null) {
                 if (match[1]) {
-                    // Do NOT lowercase here. Keep original.
-                    let fullDomain = match[1].trim();
+                    let fullDomain = match[1].trim(); 
                     let lowerDomain = fullDomain.toLowerCase();
                     const tld = lowerDomain.split('.').pop();
                     
-                    // Validate using lowercase TLD check (case insensitive validation)
-                    // Updated to 63 chars to match request
                     if (!invalidTlds.includes(tld) && /^[a-z]{2,63}$/.test(tld)) {
-                        
-                        let rootDomain = getRootDomain(fullDomain); // Get root, keep case
+                        let rootDomain = getRootDomain(fullDomain); 
                         let rootDomainLower = rootDomain.toLowerCase();
 
-                        // Store unique domains. 
-                        // If "Test.com" comes first, we store it. 
-                        // If "test.com" comes later, we ignore it because rootDomainLower is already in map.
                         if (!uniqueMap.has(rootDomainLower)) {
                             uniqueMap.set(rootDomainLower, rootDomain);
                         }
@@ -642,8 +757,6 @@
                 }
             }
 
-            // Convert map values to array. 
-            // Map insertion order is preserved, so no need to sort if we want original order.
             rawExtractedDomains = Array.from(uniqueMap.values());
             
             document.getElementById('extractedText').value = rawExtractedDomains.join('\n');
@@ -656,7 +769,7 @@
             document.getElementById('statsTitle').innerText = `Total No Of Domains: ${domains.length}`;
             const tldCounts = {};
             domains.forEach(d => {
-                const tld = d.split('.').pop().toLowerCase(); // Stats are case insensitive
+                const tld = d.split('.').pop().toLowerCase(); 
                 tldCounts[tld] = (tldCounts[tld] || 0) + 1;
             });
             let statString = Object.entries(tldCounts)
@@ -758,7 +871,7 @@
                 const sortedTlds = Array.from(tldMap.keys()).sort();
                 sortedTlds.forEach(tld => {
                     outputText += `${tld.toUpperCase()}\n`;
-                    // Sort inside groups for cleanliness, or remove .sort() to keep insertion order within groups
+                    // Output grouped list without sorting alphabetically to keep some relative order
                     tldMap.get(tld).forEach(d => outputText += `${d}\n`);
                     outputText += '\n'; 
                 });
@@ -845,4 +958,3 @@
     </script>
 </body>
 </html>
-
