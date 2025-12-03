@@ -232,7 +232,7 @@
             flex-direction: column;
             min-width: 250px;
             max-width: 350px; 
-            /*border-left: 1px solid var(--border-color);*/
+            border-left: 1px solid var(--border-color);
         }
 
         .sidebar-header {
@@ -492,7 +492,7 @@
             root.style.setProperty('--header-bg', 'transparent');
             root.style.setProperty('--header-text', 'white');
             root.style.setProperty('--container-shadow', '0 4px 15px rgba(0,0,0,0.2)');
-            root.style.setProperty('--sidebar-bg', '#f8f8f8');
+            root.style.setProperty('--sidebar-bg', '#f5f5f5');
             root.style.setProperty('--border-color', '#ccc');
             root.style.setProperty('--separator-color', '#d3d3d3');
             
@@ -564,13 +564,18 @@
             document.getElementById('inputText').value = '';
         }
 
+        // Helper to separate Name from TLD while preserving case
         function splitDomain(domain) {
+            const domainLower = domain.toLowerCase();
             const parts = domain.split('.');
+            const partsLower = domainLower.split('.');
+
             if (parts.length <= 2) {
                 return { name: parts[0], ext: parts.slice(1).join('.') };
             }
-            const last = parts[parts.length - 1];
-            const secondLast = parts[parts.length - 2];
+            
+            const last = partsLower[partsLower.length - 1];
+            const secondLast = partsLower[partsLower.length - 2];
 
             if (last.length === 2 && compositeSecond.includes(secondLast)) {
                 return { 
@@ -584,37 +589,63 @@
             };
         }
 
+        // Get Root domain but preserve original case
+        function getRootDomain(domain) {
+            const domainLower = domain.toLowerCase();
+            const parts = domain.split('.');
+            const partsLower = domainLower.split('.');
+
+            if (parts.length <= 2) return domain; 
+
+            const last = partsLower[partsLower.length - 1]; 
+            const secondLast = partsLower[partsLower.length - 2]; 
+
+            if (last.length === 2 && compositeSecond.includes(secondLast)) {
+                return parts.slice(-3).join('.');
+            }
+            return parts.slice(-2).join('.');
+        }
+
         function extractDomains() {
             const inputText = document.getElementById('inputText').value;
             if (!inputText.trim()) {
                 alert('Please paste some content first.');
                 return;
             }
-            // SECURITY: Basic Regex prevents script injection/formula injection via export
-            const regex = /\b(?:https?:\/\/)?(?:www\.)?([a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,})\b/gi;
-            const domains = new Set();
+            // Standard Regex
+            const regex = /\b(?:https?:\/\/)?(?:www\.)?([a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,})\b/g;
+            
+            const uniqueMap = new Map(); // Key = Lowercase, Value = Original
             let match;
+            
             while ((match = regex.exec(inputText)) !== null) {
                 if (match[1]) {
-                    let fullDomain = match[1].toLowerCase().trim();
-                    const tld = fullDomain.split('.').pop();
-                    if (!invalidTlds.includes(tld) && /^[a-z]{2,6}$/.test(tld)) {
-                        let rootDomain = fullDomain;
-                        const parts = fullDomain.split('.');
-                        if (parts.length > 2) {
-                             const last = parts[parts.length - 1]; 
-                             const secondLast = parts[parts.length - 2];
-                             if (last.length === 2 && compositeSecond.includes(secondLast)) {
-                                rootDomain = parts.slice(-3).join('.');
-                             } else {
-                                rootDomain = parts.slice(-2).join('.');
-                             }
+                    // Do NOT lowercase here. Keep original.
+                    let fullDomain = match[1].trim();
+                    let lowerDomain = fullDomain.toLowerCase();
+                    const tld = lowerDomain.split('.').pop();
+                    
+                    // Validate using lowercase TLD check (case insensitive validation)
+                    // Updated to 63 chars to match request
+                    if (!invalidTlds.includes(tld) && /^[a-z]{2,63}$/.test(tld)) {
+                        
+                        let rootDomain = getRootDomain(fullDomain); // Get root, keep case
+                        let rootDomainLower = rootDomain.toLowerCase();
+
+                        // Store unique domains. 
+                        // If "Test.com" comes first, we store it. 
+                        // If "test.com" comes later, we ignore it because rootDomainLower is already in map.
+                        if (!uniqueMap.has(rootDomainLower)) {
+                            uniqueMap.set(rootDomainLower, rootDomain);
                         }
-                        domains.add(rootDomain);
                     }
                 }
             }
-            rawExtractedDomains = Array.from(domains).sort();
+
+            // Convert map values to array. 
+            // Map insertion order is preserved, so no need to sort if we want original order.
+            rawExtractedDomains = Array.from(uniqueMap.values());
+            
             document.getElementById('extractedText').value = rawExtractedDomains.join('\n');
             updateStats(rawExtractedDomains);
             populateTldSelect(rawExtractedDomains);
@@ -622,11 +653,10 @@
         }
 
         function updateStats(domains) {
-            // SECURITY: Using innerText prevents XSS
             document.getElementById('statsTitle').innerText = `Total No Of Domains: ${domains.length}`;
             const tldCounts = {};
             domains.forEach(d => {
-                const tld = d.split('.').pop();
+                const tld = d.split('.').pop().toLowerCase(); // Stats are case insensitive
                 tldCounts[tld] = (tldCounts[tld] || 0) + 1;
             });
             let statString = Object.entries(tldCounts)
@@ -637,7 +667,7 @@
         }
 
         function populateTldSelect(domains) {
-            const uniqueTlds = [...new Set(domains.map(d => d.split('.').pop()))].sort();
+            const uniqueTlds = [...new Set(domains.map(d => d.split('.').pop().toLowerCase()))].sort();
             const select = document.getElementById('tldSelect');
             select.innerHTML = '<option value="">Select TLDs</option>';
             uniqueTlds.forEach(tld => {
@@ -673,9 +703,10 @@
             const filterWord = document.getElementById('wordFilterInput').value.toLowerCase().trim();
             if(filterWord) {
                 filtered = filtered.filter(d => {
-                    if(filterType === 'contains') return d.includes(filterWord);
-                    if(filterType === 'starts') return d.startsWith(filterWord);
-                    if(filterType === 'ends') return d.endsWith(filterWord);
+                    const dLower = d.toLowerCase();
+                    if(filterType === 'contains') return dLower.includes(filterWord);
+                    if(filterType === 'starts') return dLower.startsWith(filterWord);
+                    if(filterType === 'ends') return dLower.endsWith(filterWord);
                     return true;
                 });
             }
@@ -685,7 +716,7 @@
                 const allowedTlds = tldInput.split(/[\s,]+/).map(s => s.trim().replace(/^\./, '').toLowerCase()).filter(x => x);
                 if(allowedTlds.length > 0) {
                     filtered = filtered.filter(d => {
-                        return allowedTlds.some(tld => d.endsWith('.' + tld));
+                        return allowedTlds.some(tld => d.toLowerCase().endsWith('.' + tld));
                     });
                 }
             }
@@ -720,19 +751,20 @@
             if(groupTld) {
                 const tldMap = new Map();
                 filtered.forEach(domain => {
-                    const tld = domain.split('.').pop();
+                    const tld = domain.split('.').pop().toLowerCase();
                     if(!tldMap.has(tld)) tldMap.set(tld, []);
                     tldMap.get(tld).push(domain);
                 });
                 const sortedTlds = Array.from(tldMap.keys()).sort();
                 sortedTlds.forEach(tld => {
                     outputText += `${tld.toUpperCase()}\n`;
-                    tldMap.get(tld).sort().forEach(d => outputText += `${d}\n`);
+                    // Sort inside groups for cleanliness, or remove .sort() to keep insertion order within groups
+                    tldMap.get(tld).forEach(d => outputText += `${d}\n`);
                     outputText += '\n'; 
                 });
                 outputText = outputText.trim();
             } else {
-                filtered.sort();
+                // Do NOT sort globally to preserve order
                 outputText = filtered.join('\n');
             }
             document.getElementById('filteredText').value = outputText;
