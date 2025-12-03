@@ -19,6 +19,7 @@
             --border-color: #d3d3d3;
             --separator-color: #d3d3d3;
             --text-color: #333;
+            --text-muted: #555; /* Default label color */
             --btn-text-color: white;
             --btn-border: none;
             --header-bg: transparent; 
@@ -40,6 +41,7 @@
             
             /* Text Colors */
             --text-color: #e0f7fa; 
+            --text-muted: #80deea; /* Light Cyan for labels */
             --header-text: #e0f7fa;
             
             /* Borders & Separators */
@@ -238,7 +240,7 @@
         .btn-green { background-color: var(--primary); }
         .btn-green:hover { background-color: var(--primary-dark); }
         
-        /* The Blue Save Button (Default Style) */
+        /* The Blue Save Button */
         .btn-blue { background-color: #4da6ba; color: white; }
         .btn-blue:hover { background-color: #3b8c9b; }
 
@@ -247,7 +249,6 @@
         .btn-dark:hover { background-color: #222; }
         
         /* --- GLASS MODE BUTTON OVERRIDES --- */
-        /* Forces all buttons to look glassy in glass mode, ignoring their base color */
         body.glass-mode .btn-green,
         body.glass-mode .btn-blue,
         body.glass-mode .btn-dark {
@@ -328,7 +329,7 @@
 
         /* Stats */
         .stats-title { font-weight: bold; color: var(--text-color); font-size: 14px; margin-bottom: 2px; }
-        .stats-detail { color: #666; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .stats-detail { color: var(--text-muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         body.glass-mode .stats-detail { color: #80deea; }
 
         /* Sidebar */
@@ -415,15 +416,17 @@
         }
 
         .split-group { display: flex; gap: 10px; align-items: center; }
+        
+        /* FIX for visible labels in Glass mode */
+        .split-group label { font-size: 12px; color: var(--text-muted); min-width: 60px; }
+        
         .check-group { display: flex; align-items: center; margin-bottom: 8px; font-size: 13px; color: var(--text-color); }
         .group-tld-group { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-color); }
         .check-row { display: flex; margin-bottom: 8px; }
-        .check-label { width: 60px; font-size: 13px; color: #666; }
-        body.glass-mode .check-label { color: #80deea; }
+        .check-label { width: 60px; font-size: 13px; color: var(--text-muted); }
         .check-item { display: flex; align-items: center; margin-right: 15px; font-size: 13px; color: var(--text-color); cursor: pointer; }
         .check-item input { margin-right: 5px; }
-        .helper-text { font-size: 11px; color: #888; margin-top: 5px; display: block; }
-        body.glass-mode .helper-text { color: rgba(224, 247, 250, 0.5); }
+        .helper-text { font-size: 11px; color: var(--text-muted); margin-top: 5px; display: block; }
         
         .sidebar-inline-actions { 
             display: flex; 
@@ -498,7 +501,7 @@
             <a href="#" rel="noopener noreferrer">Our Network</a>
             <a href="#" rel="noopener noreferrer">More Tools</a>
             <a href="#" rel="noopener noreferrer">Feedback</a>
-            <a href="https://github.com/deebong/domain-extractor" rel="noopener noreferrer">Github</a>
+            <a href="https://github.com/deebong/domain-extractor/" rel="noopener noreferrer">Github</a>
         </div>
     </header>
 
@@ -534,7 +537,7 @@
                     <div class="theme-switcher">
                         <div class="theme-dot t-green" onclick="setTheme('green')" title="Green"></div>
                         <div class="theme-dot t-red" onclick="setTheme('red')" title="Red"></div>
-                        <div class="theme-dot t-glass" onclick="setTheme('glass')" title="Glass (Futuristic)"></div>                
+                        <div class="theme-dot t-glass" onclick="setTheme('glass')" title="Glass (Dark)"></div>                
                         <div class="theme-dot t-outline" onclick="setTheme('outline')" title="Outline (Neutral)"></div>
                     </div>
                 </div>
@@ -561,7 +564,7 @@
                             <select id="tldSelect" onchange="addTldFromSelect()" style="width: 140px; flex-shrink: 0;">
                                 <option value="">Select TLDs</option>
                             </select>
-                            <span style="font-size: 12px; color: var(--text-color);">or</span>
+                            <span style="font-size: 12px; color: var(--text-muted);">or</span>
                             <input type="text" id="tldInput" placeholder="type extensions...">
                         </div>
                         <span class="helper-text">* separated by comma like "net,org,com.au"</span>
@@ -642,6 +645,7 @@
             root.style.setProperty('--separator-color', '#d3d3d3');
             root.style.setProperty('--yellow-bg', '#ffffff');
             root.style.setProperty('--text-color', '#333');
+            root.style.setProperty('--text-muted', '#555'); /* Default Muted */
             
             // Clear body classes
             document.body.classList.remove('theme-outline', 'glass-mode');
@@ -687,6 +691,7 @@
             document.getElementById('inputText').value = '';
         }
 
+        // Helper to separate Name from TLD while preserving case
         function splitDomain(domain) {
             const parts = domain.split('.');
             if (parts.length <= 2) {
@@ -742,6 +747,7 @@
             
             while ((match = regex.exec(inputText)) !== null) {
                 if (match[1]) {
+                    // Capture original Case
                     let fullDomain = match[1].trim(); 
                     let lowerDomain = fullDomain.toLowerCase();
                     const tld = lowerDomain.split('.').pop();
