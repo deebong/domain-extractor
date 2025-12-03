@@ -3,7 +3,7 @@
 A robust, privacy-focused, client-side tool for extracting domain names from unstructured text. Built with a focus on security, performance, and usability.
 
 <p align="left">
-  <img src="./screenshot.png" alt="Domain Extractor Screenshot" width="800">
+  <img src="./screenshot.jpg" alt="Domain Extractor Screenshot" width="800">
 </p>
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
